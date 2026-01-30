@@ -7,7 +7,7 @@ root_agent: agents.agent
 
 # GCP Configuration
 gcp:
-  project_id: "ardent-spot-482414-m8"  # REPLACE THIS
+  project_id: "${GOOGLE_CLOUD_PROJECT}" # Environment variable injected at runtime
   region: "us-central1"
 
 # Model configuration
