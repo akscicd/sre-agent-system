@@ -1,0 +1,25 @@
+# ADK Configuration File
+name: sre-agent-system
+version: 1.0.0
+
+# Root agent configuration
+root_agent: agents.agent
+
+# GCP Configuration
+gcp:
+  project_id: "ardent-spot-482414-m8"  # REPLACE THIS
+  region: "us-central1"
+
+# Model configuration
+models:
+  default: "gemini-2.5-flash"
+
+# Execution settings
+execution:
+  dry_run: false  # Set to false to execute real commands
+  
+# Logging settings
+logging:
+  level: "INFO"
+  max_log_entries: 100
+  lookback_hours: 24
