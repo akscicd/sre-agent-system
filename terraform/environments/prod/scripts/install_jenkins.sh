@@ -1,16 +1,19 @@
 #!/bin/bash
 
-apt-get update
-apt-get install -y openjdk-17-jre docker.io
+sudo apt-get update
+sudo apt-get install -y openjdk-21-jre docker.io
 
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | tee /etc/apt/sources.list.d/jenkins.list > /dev/null
-apt-get update
-apt-get install -y jenkins
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt update
+sudo apt install -y jenkins
 
-usermod -aG docker jenkins
+sudo usermod -aG docker jenkins
 
-snap install google-cloud-cli --classic
+sudo snap install google-cloud-cli --classic
 
-systemctl enable jenkins
-systemctl start jenkins
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
