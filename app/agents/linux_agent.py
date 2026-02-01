@@ -7,12 +7,15 @@ from google import genai
 from google.genai import types
 from tools.gce_executor import GCEExecutorTool
 import yaml
+import os
+import yaml
 import json
 import time
 
 def load_config():
     with open('adk.yaml', 'r') as f:
-        return yaml.safe_load(f)
+        content = os.path.expandvars(f.read())
+        return yaml.safe_load(content)
 
 class LinuxSpecialist:
     def __init__(self, project_id: str):

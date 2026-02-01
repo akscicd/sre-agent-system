@@ -418,9 +418,11 @@ def run_discovery(incident_description: str) -> str:
     except Exception as e:
         # Fallback to config if auth fails or returns no project
         import yaml
+        import os
         try:
             with open('adk.yaml', 'r') as f:
-                config = yaml.safe_load(f)
+                content = os.path.expandvars(f.read())
+                config = yaml.safe_load(content)
             project_id = config.get('gcp', {}).get('project_id')
         except:
              return f"Error: Could not determine Project ID. Auth Error: {e}"

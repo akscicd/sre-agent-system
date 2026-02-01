@@ -9,6 +9,7 @@ from google.genai import types
 from tools.gce_executor import GCEExecutorTool
 from tools.gke_executor import GKEExecutorTool
 from tools.gcs_executor import GCSExecutorTool
+import os
 import yaml
 import json
 import time
@@ -16,7 +17,8 @@ import subprocess
 
 def load_config():
     with open('adk.yaml', 'r') as f:
-        return yaml.safe_load(f)
+        content = os.path.expandvars(f.read())
+        return yaml.safe_load(content)
 
 class GCPAgent:
     """

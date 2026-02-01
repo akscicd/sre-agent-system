@@ -18,6 +18,7 @@ Tools:
 from google.adk.agents import Agent
 from agents.discovery_agent import DiscoveryAgent
 from tools.memory_store import get_memory_store
+import os
 import yaml
 import json
 import time
@@ -25,7 +26,8 @@ import re
 
 def load_config():
     with open('adk.yaml', 'r') as f:
-        return yaml.safe_load(f)
+        content = os.path.expandvars(f.read())
+        return yaml.safe_load(content)
 
 # Singleton instances
 _discovery_agent = None

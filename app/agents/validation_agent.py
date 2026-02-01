@@ -7,16 +7,16 @@ from google.genai import types
 from google import genai
 from google.genai import types
 from tools.validator_tools import ValidatorTools
+import os
 import yaml
 import time
 import json
-import yaml
-import time
 
 def load_config():
     """Load the configuration from the yaml file."""
     with open('adk.yaml', 'r') as f:
-        return yaml.safe_load(f)
+        content = os.path.expandvars(f.read())
+        return yaml.safe_load(content)
 
 def validate_fix(incident_description: str, actions_taken: str, wait_seconds: int = 10) -> dict:
     """
