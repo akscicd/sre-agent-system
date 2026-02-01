@@ -13,6 +13,6 @@ resource "google_artifact_registry_repository" "repo" {
   repository_id = var.repository_id
   format        = var.format
   project       = var.project_id
-  
+
   labels = var.labels
 }

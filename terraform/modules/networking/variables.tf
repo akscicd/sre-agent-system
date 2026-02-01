@@ -34,3 +34,15 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "jenkins_vm_static_ip" {
+  description = "Static internal IP address of the Jenkins master VM"
+  type        = string
+  default     = null
+}
+
+variable "agent_vm_static_ip" {
+  description = "Static internal IP address of the Jenkins agent VM"
+  type        = string
+  default     = null
+}

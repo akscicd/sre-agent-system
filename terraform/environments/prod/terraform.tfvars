@@ -10,19 +10,30 @@ network_config = {
 }
 
 
-compute_config = {
-  jenkins_vm_name     = "jenkins-server"
-  machine_type        = "e2-standard-4"
+jenkins_config = {
+  vm_name             = "akscicd-jenkins-server"
+  machine_type        = "e2-medium"
+  deletion_protection = true
+  tags                = ["akscicd-vm", "jenkins"]
+  boot_image          = "projects/sre-agent-prod/global/images/akscicd-jenkins-server"
+  boot_size           = 50
+  static_internal_ip  = "10.0.0.10"
+}
+
+agent_config = {
+  vm_name             = "akscicd-jenkins-agent"
+  machine_type        = "e2-medium"
   deletion_protection = true
   tags                = ["akscicd-vm", "jenkins"]
   boot_image          = "ubuntu-os-cloud/ubuntu-2204-lts"
   boot_size           = 50
+  static_internal_ip  = "10.0.0.11"
 }
 
 
 iam_config = {
   service_accounts = [
-    "jenkins-sa", 
+    "jenkins-sa",
     "sre-agent-runtime"
   ]
 }

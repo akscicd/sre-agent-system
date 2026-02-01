@@ -50,6 +50,10 @@ resource "google_compute_firewall" "allow_iap" {
     ports    = ["22", "8080"]
   }
 
-  source_ranges = ["35.235.240.0/20"]
-  target_tags   = var.target_tags
+  source_ranges = compact([
+    "35.235.240.0/20",
+    var.jenkins_vm_static_ip != null ? "${var.jenkins_vm_static_ip}/32" : null,
+    var.agent_vm_static_ip != null ? "${var.agent_vm_static_ip}/32" : null,
+  ])
+  target_tags = var.target_tags
 }

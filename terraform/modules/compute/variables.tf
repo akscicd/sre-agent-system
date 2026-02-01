@@ -43,7 +43,7 @@ variable "metadata_startup_script" {
 variable "boot_disk_image" {
   description = "Boot disk image"
   type        = string
-  default     = "ubuntu-os-cloud/ubuntu-2204-lts"
+  default     = "projects/sre-agent-prod/global/images/akscicd-jenkins-server"
 }
 
 variable "boot_disk_size" {
@@ -62,4 +62,10 @@ variable "labels" {
   description = "A map of labels to apply to resources"
   type        = map(string)
   default     = {}
+}
+
+variable "static_internal_ip" {
+  description = "Static internal IP address"
+  type        = string
+  default     = null
 }

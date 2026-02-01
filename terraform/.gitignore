@@ -1,0 +1,8 @@
+# Ignore Terraform state, logs, and local variables
+**/.terraform
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/crash.log
+**/*.tfvars
+jenkins_agent_setup.sh

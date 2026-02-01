@@ -25,6 +25,7 @@ resource "google_compute_instance" "vm" {
   network_interface {
     network    = var.network_name
     subnetwork = var.subnet_name
+    network_ip = var.static_internal_ip
   }
 
   service_account {
@@ -33,7 +34,7 @@ resource "google_compute_instance" "vm" {
   }
 
   tags = var.tags
-  
+
   labels = var.labels
 
   metadata_startup_script = var.metadata_startup_script

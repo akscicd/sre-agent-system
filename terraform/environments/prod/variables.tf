@@ -25,15 +25,29 @@ variable "network_config" {
   })
 }
 
-variable "compute_config" {
-  description = "Compute Configuration"
+variable "jenkins_config" {
+  description = "Jenkins VM Configuration"
   type = object({
-    jenkins_vm_name     = string
+    vm_name             = string
     machine_type        = string
     deletion_protection = bool
     tags                = list(string)
     boot_image          = string
     boot_size           = number
+    static_internal_ip  = optional(string)
+  })
+}
+
+variable "agent_config" {
+  description = "Agent VM Configuration"
+  type = object({
+    vm_name             = string
+    machine_type        = string
+    deletion_protection = bool
+    tags                = list(string)
+    boot_image          = string
+    boot_size           = number
+    static_internal_ip  = optional(string)
   })
 }
 
