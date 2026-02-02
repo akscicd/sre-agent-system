@@ -17,6 +17,26 @@ class GCEExecutorTool:
     def __init__(self, project_id: str, dry_run: bool = True):
         self.project_id = project_id
         self.dry_run = dry_run
+        
+        # Ensure gcloud is authenticated if using a service account file
+        # This is required because gcloud CLI doesn't automatically pick up GOOGLE_APPLICATION_CREDENTIALS for command execution
+        creds_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        if creds_path and os.path.exists(creds_path):
+            try:
+                # Check if we are already authenticated
+                check = subprocess.run(
+                    ["gcloud", "auth", "list", "--filter=status:ACTIVE", "--format=value(account)"], 
+                    capture_output=True, text=True, encoding='utf-8', errors='replace'
+                )
+                if not check.stdout.strip():
+                    print(f"Activating service account from {creds_path}...")
+                    subprocess.run(
+                        ["gcloud", "auth", "activate-service-account", f"--key-file={creds_path}", "--quiet"],
+                        check=True, capture_output=True
+                    )
+            except Exception as e:
+                print(f"Warning: Failed to activate gcloud service account: {e}")
+
         self.instances_client = compute_v1.InstancesClient()
         
     def execute_command(self, command: Dict[str, Any]) -> Dict[str, Any]:
@@ -510,48 +530,21 @@ class GCEExecutorTool:
                     "gcloud", "compute", "ssh", instance_name,
                     f"--zone={zone}",
                     f"--project={self.project_id}",
+                    "--tunnel-through-iap",
+                    "--quiet", 
+                    "--command", ssh_command
                 ]
                 
-                # Enable private VM access and disable interactive prompts
-                cmd.extend(["--tunnel-through-iap", "--quiet"])
-                
-                # Add the actual command - MUST be quoted properly for gcloud
-                # On Windows, we need to use single quotes around the command for gcloud
-                cmd.extend(["--command", ssh_command])
-                
                 # Execute
-                # On Windows with shell=True, we MUST pass a string with proper quoting
-                # The --command argument needs special handling: wrap in single quotes for gcloud
-                # Use UTF-8 encoding with error replacement to handle special chars (like ● in systemctl output)
-                if os.name == 'nt':
-                    # Build command string with proper quoting
-                    # All args except --command value get double-quoted if they have spaces
-                    # The --command value gets single-quoted for gcloud to parse correctly
-                    parts = []
-                    i = 0
-                    while i < len(cmd):
-                        if cmd[i] == "--command" and i + 1 < len(cmd):
-                            # Use double quotes for the command value (standard Windows convention)
-                            parts.append("--command")
-                            parts.append(f'"{cmd[i+1]}"')
-                            i += 2
-                        else:
-                            # Double-quote if has spaces
-                            parts.append(f'"{cmd[i]}"' if " " in cmd[i] else cmd[i])
-                            i += 1
-                    cmd_str = " ".join(parts)
-                    print(f"Executing: {cmd_str}")
-                    result = subprocess.run(cmd_str, capture_output=True, text=True, timeout=120, shell=True, encoding='utf-8', errors='replace')
-                else:
-                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, shell=True, encoding='utf-8', errors='replace')
-
+                # We do NOT use shell=True here to avoid quoting hell. 
+                # passing the list directly to subprocess.run is safer and correct for Linux/Docker environments.
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, encoding='utf-8', errors='replace')
                 
                 # Check if gcloud SSH ITSELF failed (VM stopped, permissions, network issues)
                 # These errors appear in stderr and indicate we couldn't reach the VM at all.
                 # IMPORTANT: Use SPECIFIC gcloud error patterns to avoid matching remote command output
                 gcloud_errors = [
                     "Could not fetch resource",
-                    # "ERROR: (gcloud.compute.ssh)",  # TOO BROAD! Catches "exited with return code X"
                     "unrecognized arguments",  # Catch bad flag usage
                     "Could not SSH into",
                     "Connection timed out",
@@ -561,7 +554,8 @@ class GCEExecutorTool:
                     "Instance may have been terminated",
                     "Operation terminated",
                     "does not exist in zone",  # More specific
-                    "Connection reset by peer"
+                    "Connection reset by peer",
+                    "Command name argument expected"  # Catch the specific error user saw
                 ]
                 
                 stderr_lower = result.stderr.lower()
@@ -590,6 +584,15 @@ class GCEExecutorTool:
                 if is_ssh_failure:
                     if attempt < max_retries - 1:
                         print(f"SSH attempt {attempt + 1} failed (Code: {result.returncode}). Stderr: {result.stderr.strip()[:200]}")
+                        # If we see the specific syntax error, don't retry, just fail fast so we don't spam logs
+                        if "command name argument expected" in stderr_lower:
+                             return {
+                                'status': 'SSH_FAILED',
+                                'return_code': result.returncode,
+                                'message': f"SSH syntax error: {result.stderr.strip()}",
+                                'raw_stderr': result.stderr.strip()
+                            }
+                        
                         print(f"Retrying in {retry_delay}s...")
                         time.sleep(retry_delay)
                         retry_delay *= 2  # Exponential backoff
