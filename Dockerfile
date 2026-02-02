@@ -1,11 +1,9 @@
 FROM python:3.10-slim
-# Create appuser with home directory and ensure it is writable
 RUN groupadd -r appuser && useradd -r -g appuser -m -d /home/appuser appuser
 ENV HOME=/home/appuser
 RUN mkdir -p /home/appuser/.config/gcloud \
     && chown -R appuser:appuser /home/appuser
 WORKDIR /app
-# Install curl, gnupg, and Google Cloud SDK
 RUN apt-get update && apt-get install -y curl gnupg openssh-client && \
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
