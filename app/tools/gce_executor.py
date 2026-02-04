@@ -332,7 +332,7 @@ class GCEExecutorTool:
         except Exception as e:
             return {'status': 'ERROR', 'message': f'Failed to check firewall rules: {str(e)}'}
     
-    def _create_firewall_rule(self, rule_name: str, ports: list, network: str = 'default') -> Dict:
+    def _create_firewall_rule(self, rule_name: str, ports: list, network: str = 'akscicd-vpc-prod') -> Dict:
         """Create a firewall rule to allow specific ports"""
         try:
             firewalls_client = compute_v1.FirewallsClient()

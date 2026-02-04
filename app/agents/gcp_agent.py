@@ -162,7 +162,7 @@ class GCPAgent:
                     http_allowed = fw_result.get('http_allowed', False)
                     https_allowed = fw_result.get('https_allowed', False)
                     ssh_allowed = fw_result.get('ssh_allowed', False)
-                    network = fw_result.get('network', 'default')
+                    network = fw_result.get('network', 'akscicd-vpc-prod')
                     firewall_fixed = False
                     
                     # Create missing firewall rules
